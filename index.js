@@ -24,7 +24,7 @@ const argv = require('yargs')
                 .argv;
 
             
-const MiB = 1048576  //9646899      // 1 MiB = 1048576
+const MiB = 1048576      // 1 MiB = 1048576 Bytes
 
 const options = {
     method: 'GET',
@@ -48,8 +48,8 @@ const getOptions = step => ({
 })
 
 //create a write stream in output file
-const argvUrl = argv.url.split('/')
-const outputFile = argvUrl[argvUrl.length-1]
+const argvUrl = argv.url.split('/')                 //split the url on /
+const outputFile = argvUrl[argvUrl.length-1]        //take the last element as output file name
 const writeStream = fs.createWriteStream(argv.output || outputFile)
 
 const addToStream = async(option) => {
