@@ -5,25 +5,26 @@ const argv = require('yargs')
                 .demandOption(['u'])
                 .help('h')
                 .default({
-                    o: 'output',
-                    c: 4
+                    c: 4,
+                    s: 1
                 })
                 .describe({
-                    'c': 'Number of chunks of 1 MiB',
+                    'c': 'Number of chunks',
                     'o': 'Output file',
-                    'u': 'Url of the file'
+                    'u': 'Url of the file',
+                    's': 'Chunk Size in MiB'
                 })
                 .alias({
-                    'c':'chunks',
-                    'o':'output',
-                    'u':'url',
-                    'h':'help'
+                    'c': 'chunks',
+                    'o': 'output',
+                    'u': 'url',
+                    'h': 'help',
+                    's': 'size'
                 })
                 .argv;
 
             
-const MiB = 1048576        // 1 MiB = 1048576
-
+const MiB = 1048576  //9646899      // 1 MiB = 1048576
 
 const options = {
     method: 'GET',
@@ -33,13 +34,12 @@ const options = {
 //return Range for a chunk
 const determineChunkRange = (step) => {
     
-    const chunkSize =  MiB
-    const rangeStart = chunkSize * step
+    const chunkSize =  argv.size * MiB                 
+    const rangeStart = chunkSize * step              
     const rangeEnd = rangeStart + chunkSize - 1 
     return {'Range': `bytes=${rangeStart}-${rangeEnd}`}
 
 }
-
 
 //return options containing headers with range 
 const getOptions = step => ({
@@ -48,8 +48,9 @@ const getOptions = step => ({
 })
 
 //create a write stream in output file
-const writeStream = fs.createWriteStream(argv.output)
-
+const argvUrl = argv.url.split('/')
+const outputFile = argvUrl[argvUrl.length-1]
+const writeStream = fs.createWriteStream(argv.output || outputFile)
 
 const addToStream = async(option) => {
 
@@ -72,8 +73,8 @@ const main = async() => {
         for(let i = 0; i < argv.chunks; i++){
             let option = getOptions(i)
             await addToStream(option)
-            
-            console.log(`Downloaded ${i+1} chunk`)
+
+            console.log(`Downloaded ${i+1} chunk of ${argv.size} MiB`)
         }
     } catch(e) {
         console.log("Error: ", e)
