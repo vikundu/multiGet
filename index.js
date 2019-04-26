@@ -24,7 +24,7 @@ const argv = require('yargs')
                 .argv;
 
             
-const MiB = 1048576      // 1 MiB = 1048576 Bytes
+const MiB = 1048576      // 1 MiB = 1048576 bytes
 
 const options = {
     method: 'GET',
@@ -47,21 +47,23 @@ const getOptions = step => ({
     headers: determineChunkRange(step)
 })
 
+//split the url on /
+const argvUrl = argv.url.split('/')                 
+//take the last element as output file name
+const outputFile = argvUrl[argvUrl.length-1]       
 //create a write stream in output file
-const argvUrl = argv.url.split('/')                 //split the url on /
-const outputFile = argvUrl[argvUrl.length-1]        //take the last element as output file name
 const writeStream = fs.createWriteStream(argv.output || outputFile)
 
+//download a chunk and add it to stream
 const addToStream = async(option) => {
 
     return new Promise((resolve, reject) => {
-
         request(option).pipe(writeStream, { end:false })
-        .on('err', () => {
+        .on('err', () => {              //if error occured
             console.log('error')
             reject()
         })
-        .on('drain',()=> {
+        .on('drain',()=> {              //when writing is done for one chunk
             resolve()
         })
     })
